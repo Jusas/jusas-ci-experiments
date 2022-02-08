@@ -24,20 +24,23 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+
+    - name: Replace commit hash
+      run: sed -i 's/COMMIT_HASH/${{ steps.vars.outputs.sha_short }}/g' builds/cli/notices/README-BLEEDING
+
+    - name: Build
+      run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-win-x64/ && cp builds/cli/notices/* app-bleeding-win-x64
       
     - name: Build
-      run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-win-x64/
+      run: dotnet publish -c Release -r linux-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-linux-x64/ && cp builds/cli/notices/* app-bleeding-win-x64
       
     - name: Build
-      run: dotnet publish -c Release -r linux-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-linux-x64/
-      
-    - name: Build
-      run: dotnet publish -c Release -r osx-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-osx-x64/
+      run: dotnet publish -c Release -r osx-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-osx-x64/ && cp builds/cli/notices/* app-bleeding-win-x64
 
     - uses: montudor/action-zip@v1
       name: Package win-x64
       with:
-        args: zip app-bleeding-win-x64-${{ steps.vars.outputs.sha_short }}.zip app-bleeding-win-x64/
+        args: zip -r app-bleeding-win-x64-${{ steps.vars.outputs.sha_short }}.zip app-bleeding-win-x64/
 
     - name: Package linux-x64
       run: tar -czf app-bleeding-linux-x64-${{ steps.vars.outputs.sha_short }}.tar.gz app-bleeding-linux-x64/
