@@ -20,7 +20,7 @@ jobs:
         dotnet-version: 6.0.x
         
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore src/TestApp/TestApp.csproj
       
     - name: Build
       run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o bin/
