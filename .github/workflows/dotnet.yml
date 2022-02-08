@@ -27,7 +27,7 @@ jobs:
     
     - name: Set latest package prefix
       id: pkgnames
-      run: echo "::set-output name=prefix::${{ env.PKG_PREFIX }}-${{ steps.vars.outputs.buildtime }}-${{ steps.vars.outputs.sha_short }}"
+      run: echo "::set-output name=prefix::${{ env.PKG_PREFIX }}-${{ steps.buildvars.outputs.buildtime }}-${{ steps.buildvars.outputs.sha_short }}"
       
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
@@ -48,7 +48,7 @@ jobs:
       run: for a in $OSARCHS_WIN; do zip -r ${{ steps.pkgnames.outputs.prefix }}-$a.zip $PKG_PREFIX-$a/ && cp ${{ steps.pkgnames.outputs.prefix }}-$a.zip $PKG_PREFIX-latest-$a.zip; done
 
     - name: Tar linux and osx binaries
-      run: for a in $OSARCHS_OTHER; tar -czf ${{ steps.pkgnames.outputs.prefix }}-$a.tar.gz $PKG_PREFIX-$a/ && cp ${{ steps.pkgnames.outputs.prefix }}-$a.tar.gz $PKG_PREFIX-latest-$a.tar.gz; done
+      run: for a in $OSARCHS_OTHER; do tar -czf ${{ steps.pkgnames.outputs.prefix }}-$a.tar.gz $PKG_PREFIX-$a/ && cp ${{ steps.pkgnames.outputs.prefix }}-$a.tar.gz $PKG_PREFIX-latest-$a.tar.gz; done
 
     - uses: pyTooling/Actions/releaser/composite@main
       name: Releaser
