@@ -14,30 +14,38 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Add SHORT_SHA env property with commit short sha
+      run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        
-    - name: Restore dependencies
-      run: dotnet restore src/TestApp/TestApp.csproj
       
     - name: Build
-      run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o bin/
+      run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-win-x64/
       
-    - name: Package targz
-      run: tar -czf release-bin.tar.gz bin/*
-        
-    - name: Package zip
-      uses: TheDoctor0/zip-release@0.6.1
+    - name: Build
+      run: dotnet publish -c Release -r linux-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-linux-x64/
+      
+    - name: Build
+      run: dotnet publish -c Release -r osx-x64 --self-contained true src/TestApp/TestApp.csproj -o app-bleeding-osx-x64/
+
+    - uses: montudor/action-zip@v1
+      name: Package win-x64
       with:
-        filename: release-bin.zip
-        path: bin/
-        
+        args: zip app-bleeding-win-x64-${SHORT_SHA}.zip app-bleeding-win-x64/
+
+    - name: Package linux-x64
+      run: tar -czf app-bleeding-linux-x64-${SHORT_SHA}.tar.gz app-bleeding-linux-x64/
+      
+    - name: Package osx-x64
+      run: tar -czf app-bleeding-osx-x64-${SHORT_SHA}.tar.gz app-bleeding-osx-x64/    
+
     - uses: pyTooling/Actions/releaser@r0
       name: Releaser
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: 'release-bin.*'
+        files: 'app-bleeding*'
         tag: 'bleeding'
         
