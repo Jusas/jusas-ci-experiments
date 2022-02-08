@@ -13,21 +13,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
+        
     - name: Restore dependencies
       run: dotnet restore
+      
     - name: Build
       run: dotnet publish -c Release -r win-x64 --self-contained true src/TestApp/TestApp.csproj -o bin/
+      
     - name: Package targz
       run: tar -czf release-bin.tar.gz bin/*
-    - uses: papeloto/action-zip@v1
+        
+    - name: Package zip
+      uses: TheDoctor0/zip-release@0.6.1
       with:
-        files: bin/*
-        dest: release-bin.zip          
+        filename: release-bin.zip
+        path: bin/
+        
     - uses: pyTooling/Actions/releaser@r0
+      name: Releaser
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         files: 'release-bin.*'
