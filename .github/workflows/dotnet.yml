@@ -18,7 +18,7 @@ jobs:
     #  run: echo "SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
     - name: Set outputs
       id: vars
-      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)" && echo "::set-output name=buildtime::$(date +'%Y%m%d_%H%M')"
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
@@ -40,13 +40,13 @@ jobs:
     - uses: montudor/action-zip@v1
       name: Package win-x64
       with:
-        args: zip -r app-bleeding-win-x64-${{ steps.vars.outputs.sha_short }}.zip app-bleeding-win-x64/
+        args: zip -r app-bleeding-${{ steps.vars.outputs.buildtime }}-${{ steps.vars.outputs.sha_short }}-win-x64.zip app-bleeding-win-x64/
 
     - name: Package linux-x64
-      run: tar -czf app-bleeding-linux-x64-${{ steps.vars.outputs.sha_short }}.tar.gz app-bleeding-linux-x64/
+      run: tar -czf app-bleeding-${{ steps.vars.outputs.buildtime }}-${{ steps.vars.outputs.sha_short }}-linux-x64.tar.gz app-bleeding-linux-x64/
       
     - name: Package osx-x64
-      run: tar -czf app-bleeding-osx-x64-${{ steps.vars.outputs.sha_short }}.tar.gz app-bleeding-osx-x64/    
+      run: tar -czf app-bleeding-${{ steps.vars.outputs.buildtime }}-${{ steps.vars.outputs.sha_short }}-osx-x64.tar.gz app-bleeding-osx-x64/    
 
     - uses: pyTooling/Actions/releaser/composite@main
       name: Releaser
