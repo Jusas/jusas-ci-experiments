@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*'
       
 env:
   OSARCHS_ALL: win-x64 linux-x64 osx-x64
@@ -30,10 +30,10 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Build all architectures CLI
-      run: for a in $OSARCHS_ALL; do dotnet publish --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true src/TestApp/TestApp.csproj -o bin-cli-$a/; done     
+      run: for a in $OSARCHS_ALL; do dotnet --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o bin-cli-$a/ publish src/TestApp/TestApp.csproj; done     
       
     - name: Build all architectures API
-      run: for a in $OSARCHS_ALL; do dotnet publish --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true src/TestApp/TestApp.csproj -o bin-api-$a/; done     
+      run: for a in $OSARCHS_ALL; do dotnet --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o bin-api-$a/ publish src/TestApp/TestApp.csproj; done     
      
     - name: Build Core Nuget
       run: dotnet pack --version ${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ steps.buildvars.outputs.version_string }} -o $PKG_PREFIX-core/ src/TestLib/TestLib.csproj
