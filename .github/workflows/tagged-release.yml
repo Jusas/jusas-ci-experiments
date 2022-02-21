@@ -2,9 +2,10 @@ name: Release
 
 on:
   push:
-    tags:        
-      - v**
-      
+    branches:
+      - "!*"
+    tags:
+      - "v*"
       
 env:
   OSARCHS_ALL: win-x64 linux-x64 osx-x64
