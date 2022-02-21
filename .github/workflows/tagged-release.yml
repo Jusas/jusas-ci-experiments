@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:        
+      - v*.*.*
+      
+env:
+  OSARCHS_ALL: win-x64 linux-x64 osx-x64
+  OSARCHS_WIN: win-x64
+  OSARCHS_OTHER: linux-x64 osx-x64
+  PKG_PREFIX: app 
+  # watney-solve
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set build vars
+      id: buildvars
+      run: echo "::set-output name=version_string::$(echo '${{ github.ref_name }}' | sed 's@v@@')" && echo "::set-output name=buildtime::$(date +'%Y%m%d_%H%M')"
+          
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build all architectures CLI
+      run: for a in $OSARCHS_ALL; do dotnet publish --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true src/TestApp/TestApp.csproj -o bin-cli-$a/; done     
+      
+    - name: Build all architectures API
+      run: for a in $OSARCHS_ALL; do dotnet publish --version ${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true src/TestApp/TestApp.csproj -o bin-api-$a/; done     
+     
+    - name: Build Core Nuget
+      run: dotnet pack --version ${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ steps.buildvars.outputs.version_string }} -o $PKG_PREFIX-core/ src/TestLib/TestLib.csproj
+      
+    - name: Build ImageReaders Nuget
+      run: dotnet pack --version ${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ steps.buildvars.outputs.version_string }} -o $PKG_PREFIX-imagereaders/ src/TestLib/TestLib.csproj
+                   
+    - name: Install zip
+      uses: montudor/action-zip@v1
+
+    - name: Zip windows binaries for CLI
+      run: for a in $OSARCHS_WIN; do zip -r ${{ env.PKG_PREFIX }}-cli-${{ steps.buildvars.outputs.version_string }}-$a.zip bin-cli-$a/; done
+      
+    - name: Zip windows binaries for API
+      run: for a in $OSARCHS_WIN; do zip -r ${{ env.PKG_PREFIX }}-api-${{ steps.buildvars.outputs.version_string }}-$a.zip bin-api-$a/; done      
+
+    - name: Tar linux and osx binaries for CLI
+      run: for a in $OSARCHS_OTHER; do tar -czf ${{ env.PKG_PREFIX }}-cli-${{ steps.buildvars.outputs.version_string }}-$a.tar.gz bin-cli-$a/; done
+
+    - name: Tar linux and osx binaries for API
+      run: for a in $OSARCHS_OTHER; do tar -czf ${{ env.PKG_PREFIX }}-api-${{ steps.buildvars.outputs.version_string }}-$a.tar.gz bin-api-$a/; done
+
+    - name: Create release
+      uses: "marvinpinto/action-automatic-releases@v1.2.1"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: ${{ github.ref_name }}
+        prerelease: true
+        draft: true
+        title: Watney Solver ${{ github.ref_name }}
+        files: |
+          *-api-*.zip
+          *-api-*.tar.gz
+          *-cli-*.zip
+          *-cli-*.tar.gz
+          ${{ env.PKG_PREFIX }}-core/*.nupkg
+          ${{ env.PKG_PREFIX }}-core/*.snupkg
