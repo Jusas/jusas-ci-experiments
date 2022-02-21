@@ -30,16 +30,16 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Build all architectures CLI
-      run: for a in $OSARCHS_ALL; do dotnet -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o bin-cli-$a/ publish src/TestApp/TestApp.csproj; done     
+      run: for a in $OSARCHS_ALL; do dotnet publish -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o "bin-cli-$a/" src/TestApp/TestApp.csproj; done     
       
     - name: Build all architectures API
-      run: for a in $OSARCHS_ALL; do dotnet -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o bin-api-$a/ publish src/TestApp/TestApp.csproj; done     
+      run: for a in $OSARCHS_ALL; do dotnet publish -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -r $a --self-contained true -o "bin-api-$a/" src/TestApp/TestApp.csproj; done     
      
     - name: Build Core Nuget
-      run: dotnet pack -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ steps.buildvars.outputs.version_string }} -o $PKG_PREFIX-core/ src/TestLib/TestLib.csproj
+      run: dotnet pack -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -o "$PKG_PREFIX-core/" src/TestLib/TestLib.csproj
       
     - name: Build ImageReaders Nuget
-      run: dotnet pack -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:Version=${{ steps.buildvars.outputs.version_string }} -o $PKG_PREFIX-imagereaders/ src/TestLib/TestLib.csproj
+      run: dotnet pack -p:Version=${{ steps.buildvars.outputs.version_string }} -c Release -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -o "$PKG_PREFIX-imagereaders/" src/TestLib/TestLib.csproj
                    
     - name: Install zip
       uses: montudor/action-zip@v1
