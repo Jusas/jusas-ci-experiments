@@ -2,9 +2,10 @@ name: 'CI .NET'
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    tags-ignore:
+      - v*.*.*
 
 env:
   PKG_PREFIX: 'app-bleeding'
