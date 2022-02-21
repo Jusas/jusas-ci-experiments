@@ -3,7 +3,7 @@ name: 'CI .NET'
 on:
   push:
     branches:
-      - main
+      - xxx
     tags-ignore:
       - v*.*.*
 
